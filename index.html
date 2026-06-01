@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confirmar Asistencia</title>
+<style>
+body{
+font-family: Georgia, serif;
+background:#f8f5f1;
+color:#60411f;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+margin:0;
+padding:20px;
+}
+.card{
+background:white;
+max-width:650px;
+width:100%;
+padding:30px;
+border-radius:20px;
+box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
+h1{text-align:center;}
+input,select,button{
+width:100%;
+padding:12px;
+margin-top:10px;
+border-radius:10px;
+border:1px solid #d9c7b0;
+box-sizing:border-box;
+}
+button{
+background:#60411f;
+color:white;
+border:none;
+cursor:pointer;
+}
+#suggestions div{
+padding:8px;
+cursor:pointer;
+}
+#suggestions div:hover{background:#f3ece3;}
+.hidden{display:none;}
+.result{
+margin-top:15px;
+padding:15px;
+background:#f8f5f1;
+border-radius:10px;
+}
+.whatsapp-link{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    text-decoration:none;
+    color:#25D366;
+    font-weight:bold;
+    font-size:18px;
+    margin-top:15px;
+}
+
+.whatsapp-link img{
+    width:28px;
+    height:28px;
+}
+
+.whatsapp-link:hover{
+    transform:scale(1.05);
+}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>Confirmar Asistencia</h1>
+<p>Ingresa tu nombre completo.</p>
+
+<input id="nombre" placeholder="Nombre completo">
+
+<div id="suggestions"></div>
+
+<div id="resultado" class="hidden result">
+<p id="saludo"></p>
+<p id="invitados"></p>
+
+<select id="asistencia">
+<option value="">¿Confirmas tu asistencia?</option>
+<option>Sí asistiré</option>
+<option>No asistiré</option>
+</select>
+
+<button onclick="confirmar()">Confirmar asistencia</button>
+</div>
+
+<div id="noEncontrado" class="hidden result">
+    <p>No encontramos tu invitación.</p>
+
+    <a href="https://wa.me/573043379386" target="_blank" class="whatsapp-link">
+        ➜ <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
+        alt="WhatsApp">
+        Comunícate por WhatsApp
+    </a>
+</div>
+</div>
+
+<script>
+const invitados = [
+["Alejandra Hurtado",2],["Ana Sofía Gallego",1],["Ana Sophia",1],["Andrés Felipe Zuñiga",1],
+["Antonella Sanclemente",1],["Brihanna Córdoba",1],["Carlos Arcila",2],["Catalina",1],
+["Cindi Ramos",4],["Cristian David Romero",1],["Dana Ramírez",1],["David Arrigui",1],
+["David Ramos",2],["Diana Barbosa",3],["Esteban Morales",1],["Flavio Martines",5],
+["Gladis Ramos",1],["Humberto",2],["Iker Henao",1],["Jamer Estrada",2],
+["Jerónimo Calero",1],["Jesus Castro",1],["Jhoel Baena",1],["Jimmy Vázquez",1],
+["John Alejandro Mosquera",1],["Juan Camilo Chantre",1],["Juan Camilo Gil",4],
+["Juan Camilo Tascón",1],["Juan Camilo Vázquez",1],["Juan David Durán",1],
+["Juan Esteban Castillo",1],["Juan José Ordonez",1],["Juan Sebastián Rueda",1],
+["Katherin Zambrano",1],["Laura Londoño",1],["María Camila Gallego",1],
+["María José Cajiao",1],["María José Pascuas",1],["María Rut",1],
+["Marlene Ramos",1],["Michel Giraldo",1],["Miguel Marin",4],
+["Miguel Noguera",1],["Nestor Gil",4],["Paola Tovar",4],
+["Profe Henry",2],["Rafael Ramos",2],["Sara Ordonez",1],
+["Sergio Buitrago",1],["Sofía Solano",1],["Teresa Ramos",1],
+["Valentina Bustamante",1],["Valentina Salazar",1],["Luciana Salazar",1],["Valeria Bustamante",1],["Valery Daraviña",1],
+["Xiomara Garcia",1],["Yowelys",2]
+];
+
+function normalizar(t){
+ return t.toLowerCase()
+ .normalize("NFD")
+ .replace(/[\u0300-\u036f]/g,"");
+}
+
+let seleccionado=null;
+const input=document.getElementById("nombre");
+const suggestions=document.getElementById("suggestions");
+
+input.addEventListener("input",()=>{
+ const q=normalizar(input.value);
+ suggestions.innerHTML="";
+ document.getElementById("resultado").classList.add("hidden");
+ document.getElementById("noEncontrado").classList.add("hidden");
+
+ if(q.length<2) return;
+
+ const matches=invitados.filter(i=>normalizar(i[0]).includes(q)).slice(0,8);
+
+ if(matches.length){
+   matches.forEach(m=>{
+      const d=document.createElement("div");
+      d.textContent=m[0];
+      d.onclick=()=>seleccionar(m);
+      suggestions.appendChild(d);
+   });
+ } else {
+   document.getElementById("noEncontrado").classList.remove("hidden");
+ }
+});
+
+function seleccionar(m){
+ seleccionado=m;
+ suggestions.innerHTML="";
+ input.value=m[0];
+ document.getElementById("saludo").innerHTML="<strong>¡Hola, "+m[0]+"!</strong>";
+ document.getElementById("invitados").innerHTML="Invitados asignados: <strong>"+m[1]+" persona(s)</strong>";
+ document.getElementById("resultado").classList.remove("hidden");
+}
+
+async function confirmar(){
+
+ if(!seleccionado){
+   alert("Selecciona un invitado.");
+   return;
+ }
+
+ const a = document.getElementById("asistencia").value;
+
+ if(!a){
+   alert("Selecciona una opción.");
+   return;
+ }
+
+ const datos = {
+   nombre: seleccionado[0],
+   invitados: seleccionado[1],
+   asistencia: a
+ };
+
+ try{
+
+   await fetch("https://script.google.com/macros/s/AKfycbwkrkahhN35MhEoti2RBM1qvz4J1o_AXVLWdnosU1XlIfmBiCvZ00TrzBsTxHg564SHKA/exec",{
+     method:"POST",
+     body:JSON.stringify(datos)
+   });
+
+   if(a === "Sí asistiré"){
+  alert("🎉 ¡Gracias por confirmar tu asistencia! 🎉\n\nRecuerda que la celebración es el 10 de julio a las 7:00 P.M.\n\n😊 No te olvides, ¡te esperamos!");
+}else{
+  alert("Gracias por informarnos. ❤️");
+}
+
+   document.getElementById("resultado").innerHTML = `
+     <h2>✅ Confirmación registrada</h2>
+     <p>Gracias por confirmar tu asistencia.</p>
+   `;
+
+ }catch(error){
+
+   alert("Ocurrió un error al guardar la respuesta.");
+
+ }
+
+}
+</script>
+</body>
+</html>
